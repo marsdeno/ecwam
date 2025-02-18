@@ -10,7 +10,8 @@ if( CMAKE_Fortran_COMPILER_ID MATCHES Intel )
   set_source_files_properties( create_wam_bathymetry_ETOPO1.F90 PROPERTIES COMPILE_FLAGS "-check nobounds" )
 endif()
 
-foreach( program
+foreach( prec sp dp )
+  foreach( program
     chief
     bouint
     preproc
@@ -20,13 +21,14 @@ foreach( program
     create_wam_bathymetry_ETOPO1 )
 
     ecbuild_add_executable(
-        TARGET          ${PROJECT_NAME}-${program}
+        TARGET          ${PROJECT_NAME}-${program}-${prec}
         SOURCES         ${program}.F90
-        LIBS            ${PROJECT_NAME} ${OpenMP_Fortran_LIBRARIES}
+        LIBS            ${PROJECT_NAME}_${prec} ${OpenMP_Fortran_LIBRARIES}
         LINKER_LANGUAGE Fortran
     )
-    ecwam_target_compile_definitions_FILENAME(${PROJECT_NAME}-${program})
+    ecwam_target_compile_definitions_FILENAME( ${PROJECT_NAME}-${program}-${prec} )
 
+  endforeach()
 endforeach()
 
 string( TOUPPER ${PROJECT_NAME} PNAME )

@@ -219,8 +219,8 @@ list( APPEND ecwam_srcs
   sdice.F90
   sdice1.F90
   sdice2.F90
-  sdice3.F90  
-  icebreak_modify_attenuation.F90  
+  sdice3.F90
+  icebreak_modify_attenuation.F90
   ibrmemout.F90
   se10mean.F90
   sebtmean.F90
@@ -441,41 +441,48 @@ if( HAVE_ACC )
   set( LIBRARY_TYPE STATIC )
 endif()
 
-ecbuild_add_library(
-    TARGET           ${ecwam}
-    TYPE             ${LIBRARY_TYPE}
-    SOURCES          ${ecwam_srcs}
-    PUBLIC_LIBS      fiat parkind_${prec} ${ecwam}_intfb
-                     ${MPI_Fortran_LIBRARIES}
-                     ${${PNAME}_OCEANMODEL_LIBRARIES}
-                     field_api_${prec}
-    PRIVATE_LIBS     eccodes_f90
-                     ${MULTIO_LIBRARIES}
-                     ${OpenMP_Fortran_LIBRARIES}
-                     $<${HAVE_ECFLOW}:ecflow_lightf>
-                     $<${HAVE_ACC}:OpenACC::OpenACC_Fortran>
-    PUBLIC_INCLUDES  $<INSTALL_INTERFACE:include>
-    PRIVATE_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}
-    PRIVATE_DEFINITIONS ${ECWAM_PRIVATE_DEFINITIONS} $<${HAVE_CUDA}:WAM_HAVE_CUDA>
-    PUBLIC_DEFINITIONS ${ECWAM_DEFINITIONS}
-)
+foreach( prec sp dp )
+  if( HAVE_${prec} )
 
-ecwam_target_fortran_module_directory(
-    TARGET ${ecwam}
-    MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/${ecwam}
-    INSTALL_DIRECTORY module/${ecwam}
-)
+    ecbuild_add_library(
+        TARGET           ${ecwam}_${prec}
+        TYPE             ${LIBRARY_TYPE}
+        SOURCES          ${ecwam_srcs}
+        PUBLIC_LIBS      fiat parkind_${prec} ${ecwam}_intfb
+                         ${MPI_Fortran_LIBRARIES}
+                         ${${PNAME}_OCEANMODEL_LIBRARIES}
+                         field_api_${prec}
+        PRIVATE_LIBS     eccodes_f90
+                         ${MULTIO_LIBRARIES}
+                         ${OpenMP_Fortran_LIBRARIES}
+                         $<${HAVE_ECFLOW}:ecflow_lightf>
+                         $<${HAVE_ACC}:OpenACC::OpenACC_Fortran>
+        PUBLIC_INCLUDES  $<INSTALL_INTERFACE:include>
+        PRIVATE_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}
+        PRIVATE_DEFINITIONS ${ECWAM_PRIVATE_DEFINITIONS} $<${HAVE_CUDA}:WAM_HAVE_CUDA>
+        PUBLIC_DEFINITIONS ${ECWAM_DEFINITIONS}
+    )
 
-if( HAVE_ACC AND CMAKE_Fortran_COMPILER_ID MATCHES "PGI|NVHPC")
-   target_link_options( ${ecwam} INTERFACE SHELL:${OpenACC_Fortran_FLAGS} )
-   target_compile_options( ${ecwam} PRIVATE "-gpu=maxregcount:168,fastmath" )
-endif()
+    ecwam_target_fortran_module_directory(
+        TARGET ${ecwam}_${prec}
+        MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/${ecwam}_${prec}
+        INSTALL_DIRECTORY module/${ecwam}_${prec}
+    )
 
-if( HAVE_CUDA )
-  target_link_options( ${ecwam} PUBLIC "-cuda;-gpu=pinned" )
-endif()
+    if( HAVE_ACC AND CMAKE_Fortran_COMPILER_ID MATCHES "PGI|NVHPC")
+       target_link_options( ${ecwam}_${prec} INTERFACE SHELL:${OpenACC_Fortran_FLAGS} )
+       target_compile_options( ${ecwam}_${prec} PRIVATE "-gpu=maxregcount:168,fastmath" )
+    endif()
 
-ecwam_target_compile_definitions_FILENAME( ${ecwam} )
+    if( HAVE_CUDA )
+      target_link_options( ${ecwam}_${prec} PUBLIC "-cuda;-gpu=pinned" )
+    endif()
+
+    ecwam_target_compile_definitions_FILENAME( ${ecwam}_${prec} )
+
+  endif()
+
+endforeach()
 
 ### The file mubuf.F90, which is only used for "preproc" is sensitive to optimisations
 #   possibly leading to different wam_grid_<1,2,3> files.
