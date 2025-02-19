@@ -544,17 +544,21 @@ if( HAVE_LOKI )
     )
   endif()
 
-  # Apply Loki source file transformation to lib target
-  loki_transform_target( TARGET ${ecwam}
-    MODE ${LOKI_MODE}
-    FRONTEND ${LOKI_FRONTEND}
-    CONFIG ${LOKI_CONFIG_FILE}
-    PLAN ${CMAKE_CURRENT_BINARY_DIR}/loki_plan_ecwam.cmake
-    CPP
-    DEFINITIONS WAM_GPU
-    INCLUDES ${ecwam_intfb_includes}
-    SOURCES
-      ${CMAKE_CURRENT_SOURCE_DIR}/
-  )
+  foreach( prec sp dp )
+    if( HAVE_${prec} )
+      # Apply Loki source file transformation to lib target
+      loki_transform_target( TARGET ${ecwam}_${prec}
+        MODE ${LOKI_MODE}
+        FRONTEND ${LOKI_FRONTEND}
+        CONFIG ${LOKI_CONFIG_FILE}
+        PLAN ${CMAKE_CURRENT_BINARY_DIR}/loki_plan_ecwam.cmake
+        CPP
+        DEFINITIONS WAM_GPU
+        INCLUDES ${ecwam_intfb_includes}
+        SOURCES
+          ${CMAKE_CURRENT_SOURCE_DIR}/
+        )
+    endif()
+  endforeach()
 
 endif()
