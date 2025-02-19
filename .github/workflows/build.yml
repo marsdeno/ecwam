@@ -31,7 +31,6 @@ jobs:
       matrix:
         #build_type: [Release,Debug] # Debug tests takes too long
         build_type: [Release]
-        prec: ['DP', 'SP']
         name:
           - linux gnu-10
           - linux gnu-14
@@ -208,11 +207,11 @@ jobs:
         dependency_branch: develop
         dependency_cmake_options: |
           ecmwf/fckit: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF -DENABLE_FCKIT_VENV=ON"
-          ecmwf-ifs/fiat: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF -DENABLE_SINGLE_PRECISION=${{ matrix.prec == 'SP' }} -DENABLE_DOUBLE_PRECISION=${{ matrix.prec == 'DP' }}"
+          ecmwf-ifs/fiat: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF -DENABLE_SINGLE_PRECISION=ON -DENABLE_DOUBLE_PRECISION=ON"
           ecmwf/eccodes: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_MEMFS=ON -DENABLE_JPG=OFF -DENABLE_PNG=OFF"
-          ecmwf-ifs/field_api: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF -DENABLE_ACC=OFF -DENABLE_SINGLE_PRECISION=${{ matrix.prec == 'SP' }} -DENABLE_DOUBLE_PRECISION=${{ matrix.prec == 'DP' }}"
+          ecmwf-ifs/field_api: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF -DENABLE_ACC=OFF -DENABLE_SINGLE_PRECISION=ON -DENABLE_DOUBLE_PRECISION=ON"
           ecmwf-ifs/loki: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF"
-        cmake_options: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_MPI=ON -DENABLE_LOKI=ON -DLOKI_MODE=idem-stack -DENABLE_SINGLE_PRECISION=${{ matrix.prec == 'SP' }}"
+        cmake_options: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ matrix.cmake_options }} -DENABLE_MPI=ON -DENABLE_LOKI=ON -DLOKI_MODE=idem-stack -DENABLE_SINGLE_PRECISION=ON -DENABLE_DOUBLE_PRECISION=ON"
         ctest_options: "${{ matrix.ctest_options }}"
 
     - name: Verify tools
